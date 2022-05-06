@@ -3,8 +3,10 @@
 namespace TetrisForUniRx.Scripts.Blocks
 {
     [System.Serializable]
-    public class Shape : MonoBehaviour
+    public class TetrisShape
     {
         [SerializeField] private GameObject[] _shapeTypes;
+
+        public GameObject[] ShapeType => _shapeTypes;
     }
 }
