@@ -4,8 +4,6 @@ using TetrisForUniRx.Scripts.Blocks;
     
 public class TetrisGridInstaller : MonoInstaller
 {
-    
-    
     public override void InstallBindings()
     {
         Container
