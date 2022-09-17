@@ -11,7 +11,7 @@ namespace TetrisForUniRx.Scripts.Blocks
         
         [Inject] private TetrisGrid _grid;
 
-        private readonly ReactiveProperty<bool> _isActive = new BoolReactiveProperty(true);
+        private readonly BoolReactiveProperty _isActive = new BoolReactiveProperty(true);
 
         public IReadOnlyReactiveProperty<bool> IsActive => _isActive;
         

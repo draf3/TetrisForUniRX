@@ -48,7 +48,7 @@ namespace TetrisForUniRx.Scripts.Managers
                     DeleteRows(0);
                 }).AddTo(this);
 
-            _blockManager.CurrentBlockPosition
+            _blockManager.OnChangedPosition
                 .Where(_ => _gameStateProvider.Current.Value == GameState.Playing)
                 .Where(_ => _blockManager.CurrentBlock.Value != null)
                 .Subscribe(_ =>
@@ -56,7 +56,7 @@ namespace TetrisForUniRx.Scripts.Managers
                     UpdateGrid(_blockManager.CurrentBlock.Value.transform);
                 }).AddTo(this);
             
-            _blockManager.CurrentBlockRotation
+            _blockManager.OnChangedRotation
                 .Where(_ => _gameStateProvider.Current.Value == GameState.Playing)
                 .Where(_ => _blockManager.CurrentBlock.Value != null)
                 .Subscribe(_ =>
