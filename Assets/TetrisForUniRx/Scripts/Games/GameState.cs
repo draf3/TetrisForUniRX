@@ -5,8 +5,7 @@ namespace TetrisForUniRx.Scripts.Games
         None = 0,
         Title = 1,
         Ranking,
-        Start,
-        Play,
+        Playing,
         Result
     }
 }

@@ -1,9 +1,11 @@
 ﻿using System;
 using TetrisForUniRx.Scripts.Blocks;
+using TetrisForUniRx.Scripts.Games;
 using TetrisForUniRx.Scripts.Inputs;
 using TetrisForUniRx.Scripts.Inputs.InputImpls;
 using UnityEngine;
 using UniRx;
+using Zenject;
 
 namespace TetrisForUniRx.Scripts.Managers
 {
@@ -14,39 +16,40 @@ namespace TetrisForUniRx.Scripts.Managers
 
         private readonly ReactiveProperty<GameObject> _currentBlock = new ReactiveProperty<GameObject>(null);
         private readonly ReactiveProperty<BlockMover> _currentBlockMover = new ReactiveProperty<BlockMover>(null);
-        // private readonly ReactiveProperty<Transform> _currentBlockTransform = new ReactiveProperty<Transform>();
-        // private Transform _currentBlockTransform;
         private readonly ReactiveProperty<Vector3> _currentBlockPosition = new ReactiveProperty<Vector3>();
         private readonly ReactiveProperty<Quaternion> _currentBlockRotation = new ReactiveProperty<Quaternion>();
         
         public IReadOnlyReactiveProperty<GameObject> CurrentBlock => _currentBlock;
         public IReadOnlyReactiveProperty<BlockMover> CurrentBlockMover => _currentBlockMover;
-        // public IReadOnlyReactiveProperty<Transform> CurrentBlockTransform => _currentBlockTransform;
-        // public Transform CurrentBlockTransform => _currentBlockTransform;
         public IReadOnlyReactiveProperty<Vector3> CurrentBlockPosition => _currentBlockPosition;
         public IReadOnlyReactiveProperty<Quaternion> CurrentBlockRotation => _currentBlockRotation;
+        
+        [Inject] private GameStateProvider _gameStateProvider;
 
         private void Start()
         {
             var input = GetComponent<IInputEventProvider>();
 
-            _currentBlock.Value = _blockSpawner.Spawn();
-            _currentBlockMover.Value = _currentBlock.Value.GetComponent<BlockMover>();
-            // _currentBlockTransform = _currentBlock.Value.transform;
-            _currentBlockPosition.Value = _currentBlock.Value.transform.position;
-            _currentBlockRotation.Value = _currentBlock.Value.transform.rotation;
-                    
+            _gameStateProvider.Current
+                .Where(x => x == GameState.Playing)
+                .Subscribe(_ =>
+                {
+                    _currentBlock.Value = _blockSpawner.Spawn();
+                    _currentBlockMover.Value = _currentBlock.Value.GetComponent<BlockMover>();
+                    _currentBlockPosition.Value = _currentBlock.Value.transform.position;
+                    _currentBlockRotation.Value = _currentBlock.Value.transform.rotation;
+                });
+
             _currentBlockMover
+                .Where(_ => _gameStateProvider.Current.Value == GameState.Playing)
                 .Subscribe(mover =>
                 {
                     mover.IsActive
                         .Where(x => !x)
                         .Subscribe(_ =>
                         {
-                            // Debug.LogFormat("Spawn block");
                             _currentBlock.Value = _blockSpawner.Spawn();
                             _currentBlockMover.Value = _currentBlock.Value.GetComponent<BlockMover>();
-                            // _currentBlockTransform = _currentBlock.Value.transform;
                             _currentBlockPosition.Value = _currentBlock.Value.transform.position;
                             _currentBlockRotation.Value = _currentBlock.Value.transform.rotation;
                         })
@@ -58,7 +61,6 @@ namespace TetrisForUniRx.Scripts.Managers
             //     .Where(x => x)
             //     .Subscribe(_ =>
             //     {
-            //         Debug.LogFormat("Spawn block");
             //         _currentBlock.Value = _blockSpawner.Spawn();
             //         _currentBlockMover.Value = _currentBlock.Value.GetComponent<BlockMover>();
             //         _currentBlockTransform.Value = _currentBlock.Value.transform;
@@ -66,10 +68,10 @@ namespace TetrisForUniRx.Scripts.Managers
             //     .AddTo(this);
             
             input.OnRotate
+                .Where(_ => _gameStateProvider.Current.Value == GameState.Playing)
                 .Where(x => x)
                 .Subscribe(_ =>
                 {
-                    // Debug.LogFormat("Rotate block");
                     _currentBlockMover.Value.RotateClockWise();
                     _currentBlockRotation.Value = _currentBlock.Value.transform.rotation;
                     
@@ -78,30 +80,30 @@ namespace TetrisForUniRx.Scripts.Managers
                 .AddTo(this);
             
             input.OnMoveLeft
+                .Where(_ => _gameStateProvider.Current.Value == GameState.Playing)
                 .Where(x => x)
                 .Subscribe(_ =>
                 {
-                    // Debug.LogFormat("MoveLeft block");
                     _currentBlockMover.Value.MoveHorizontal(Vector2.left);
                     _currentBlockPosition.Value = _currentBlock.Value.transform.position;
                 })
                 .AddTo(this);
             
             input.OnMoveRight
+                .Where(_ => _gameStateProvider.Current.Value == GameState.Playing)
                 .Where(x => x)
                 .Subscribe(_ =>
                 {
-                    // Debug.LogFormat("MoveRight block");
                     _currentBlockMover.Value.MoveHorizontal(Vector2.right);
                     _currentBlockPosition.Value = _currentBlock.Value.transform.position;
                 })
                 .AddTo(this);
             
             input.OnMoveDown
+                .Where(_ => _gameStateProvider.Current.Value == GameState.Playing)
                 .Where(x => x)
                 .Subscribe(_ =>
                 {
-                    // Debug.LogFormat("MoveDown block");
                     _currentBlockMover.Value.MoveDown();
                     _currentBlockPosition.Value = _currentBlock.Value.transform.position;
                 })

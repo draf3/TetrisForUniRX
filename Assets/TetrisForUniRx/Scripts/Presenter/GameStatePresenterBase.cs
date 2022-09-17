@@ -2,9 +2,9 @@ using TetrisForUniRx.Scripts.Games;
 using UnityEngine;
 using Zenject;
 
-namespace TetrisForUniRx.Scripts.Managers
+namespace TetrisForUniRx.Scripts.Presenter
 {
-    public abstract class StateManagerBase : MonoBehaviour
+    public abstract class GameStatePresenterBase : MonoBehaviour
     {
         [SerializeField] protected GameObject _panelGo;
         [Inject] protected GameStateProvider _gameStateProvider;

@@ -2,6 +2,7 @@
 using UnityEngine;
 using UniRx;
 using TetrisForUniRx.Scripts.Blocks;
+using TetrisForUniRx.Scripts.Games;
 using Zenject;
 
 namespace TetrisForUniRx.Scripts.Managers
@@ -9,14 +10,14 @@ namespace TetrisForUniRx.Scripts.Managers
     public class GridManager : MonoBehaviour
     {
         [SerializeField] private int _decreaseMillisecondes = 500;
-
         [SerializeField] private BlockManager _blockManager;
+        [SerializeField] private Transform _blockHolder;
         
         [Inject, SerializeField] private TetrisGrid _grid;
+        [Inject] private GameStateProvider _gameStateProvider;
+        [Inject] private ScoreManager _scoreManager;
         
         public TetrisGrid.Column[] Columns = new TetrisGrid.Column[10];
-        
-        [SerializeField] private Transform _blockHolder;
 
         private void Start()
         {
@@ -25,61 +26,42 @@ namespace TetrisForUniRx.Scripts.Managers
             Observable
                 .Timer(TimeSpan.FromMilliseconds(_decreaseMillisecondes), TimeSpan.FromMilliseconds(_decreaseMillisecondes))
                 // .Interval(TimeSpan.FromMilliseconds(_decreaseMillisecondes))
+                .Where(_ => _gameStateProvider.Current.Value == GameState.Playing)
                 .Where(_ => _blockManager.CurrentBlock.Value != null)
                 .Subscribe(_ =>
                 {
-                    // Debug.Log("Timer");
                     _blockManager.CurrentBlockMover.Value.MoveDown();
                     UpdateGrid(_blockManager.CurrentBlock.Value.transform);
                 }).AddTo(this);
 
-            _blockManager.CurrentBlock
+            _blockManager.CurrentBlockMover
+                .Where(_ => _gameStateProvider.Current.Value == GameState.Playing)
                 .Where(x => x != null)
-                .Subscribe(_ =>
+                .Subscribe(x =>
                 {
-                    Debug.Log("Change CurrentBlock");
-                    _blockManager.CurrentBlockMover.Value.MoveDown();
-                    UpdateGrid(_blockManager.CurrentBlock.Value.transform);
-                    
-                    if (!_blockManager.CurrentBlockMover.Value.IsGridPosition())
+                    if (!x.IsGridPosition())
                     {
-                        Debug.Log("Clear");
                         ClearBoard();
+                        _gameStateProvider.Current.Value = GameState.Result;
                     }
                     
                     DeleteRows(0);
                 }).AddTo(this);
 
-            // _blockManager.CurrentBlock
-            //     .Where(go => go != null)
-            //     .Select(go => go.transform.position)
-            //     .Subscribe(v =>
-            //     {
-            //         Debug.Log(v);
-            //     });
-                
-            // _blockManager.CurrentBlockTransform
-            //     .ObserveEveryValueChanged(t => t.position)
-            //     .Subscribe(v =>
-            //     {
-            //         Debug.Log(v);
-            //     });
-                
-
             _blockManager.CurrentBlockPosition
+                .Where(_ => _gameStateProvider.Current.Value == GameState.Playing)
                 .Where(_ => _blockManager.CurrentBlock.Value != null)
                 .Subscribe(_ =>
                 {
                     UpdateGrid(_blockManager.CurrentBlock.Value.transform);
-                    // Debug.Log("Change CurrentBlockPosition");
                 }).AddTo(this);
             
             _blockManager.CurrentBlockRotation
+                .Where(_ => _gameStateProvider.Current.Value == GameState.Playing)
                 .Where(_ => _blockManager.CurrentBlock.Value != null)
                 .Subscribe(_ =>
                 {
                     UpdateGrid(_blockManager.CurrentBlock.Value.transform);
-                    // Debug.Log("Change CurrentBlockRotation");
                 }).AddTo(this);
             
         }
@@ -93,6 +75,8 @@ namespace TetrisForUniRx.Scripts.Managers
                     DeleteRow(y);
                     DecreaseRowsAbove(y + 1);
                     --y;
+                    
+                    _scoreManager.AddScore();
                 }
             }     
         

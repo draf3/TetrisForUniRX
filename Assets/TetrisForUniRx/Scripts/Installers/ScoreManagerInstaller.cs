@@ -1,16 +1,15 @@
-using TetrisForUniRx.Scripts.Games;
 using UnityEngine;
 using Zenject;
 
 namespace TetrisForUniRx.Scripts.Installers
 {
-    public class GameStateInstaller : MonoInstaller
+    public class ScoreManagerInstaller : MonoInstaller
     {
         public override void InstallBindings()
         {
             Container
-                .Bind<GameStateProvider>()
-                .To<GameStateProvider>()
+                .Bind<TetrisForUniRx.Scripts.Managers.ScoreManager>()
+                .To<TetrisForUniRx.Scripts.Managers.ScoreManager>()
                 .AsCached();
         }
     }

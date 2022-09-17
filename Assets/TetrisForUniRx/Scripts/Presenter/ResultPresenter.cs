@@ -1,33 +1,48 @@
 using TetrisForUniRx.Scripts.Games;
-using TetrisForUniRx.Scripts.Managers;
 using UniRx;
 using UnityEngine;
+using UnityEngine.UI;
 using Zenject;
 
 namespace TetrisForUniRx.Scripts.Presenter
 {
-    public class ResultPresenter : MonoBehaviour
+    public class ResultPresenter : GameStatePresenterBase
     {
-        [Inject] private GameStateProvider _gameStateProvider;
-        [SerializeField] private ResultManager _resultManager; 
+        [Inject] private TetrisForUniRx.Scripts.Managers.ScoreManager _scoreManager;
+        
+        [SerializeField] private Button _replayButton;
+        [SerializeField] private Button _topButton;
+        [SerializeField] private Text _totalScore;
 
         private void Start()
         {
-            _resultManager.SetActivePanel(false);
+            SetActivePanel(false);
             
             _gameStateProvider.Current
-                .Where(x => x == GameState.Result)
+                .Subscribe(x =>
+                {
+                    var isResult = x == GameState.Result;
+                    SetActivePanel(isResult);
+                    if (isResult)
+                    {
+                        _totalScore.text = _scoreManager.Score.Value.ToString();    
+                    }
+                })
+                .AddTo(this);
+
+            _replayButton
+                .OnClickAsObservable()
                 .Subscribe(_ =>
                 {
-                    _resultManager.SetActivePanel(true);
+                    _gameStateProvider.Current.Value = GameState.Playing;
                 })
                 .AddTo(this);
             
-            _gameStateProvider.Current
-                .Where(x => x != GameState.Result)
+            _topButton
+                .OnClickAsObservable()
                 .Subscribe(_ =>
                 {
-                    _resultManager.SetActivePanel(false);
+                    _gameStateProvider.Current.Value = GameState.Title;
                 })
                 .AddTo(this);
         }

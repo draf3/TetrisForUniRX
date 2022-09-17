@@ -1,14 +1,17 @@
 using UnityEngine;
 using Zenject;
 using TetrisForUniRx.Scripts.Blocks;
-    
-public class TetrisGridInstaller : MonoInstaller
+
+namespace TetrisForUniRx.Scripts.Installers
 {
-    public override void InstallBindings()
+    public class TetrisGridInstaller : MonoInstaller
     {
-        Container
-            .Bind<TetrisGrid>()
-            .To<TetrisGrid>()
-            .AsCached();
+        public override void InstallBindings()
+        {
+            Container
+                .Bind<TetrisGrid>()
+                .To<TetrisGrid>()
+                .AsCached();
+        }
     }
 }

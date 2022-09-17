@@ -2,32 +2,28 @@ using TetrisForUniRx.Scripts.Games;
 using TetrisForUniRx.Scripts.Managers;
 using UniRx;
 using UnityEngine;
+using UnityEngine.UI;
 using Zenject;
 
 namespace TetrisForUniRx.Scripts.Presenter
 {
-    public class PlayPresenter : MonoBehaviour
+    public class PlayPresenter : GameStatePresenterBase
     {
-        [Inject] private GameStateProvider _gameStateProvider;
-        [SerializeField] private PlayManager _playManager; 
+        [Inject] private TetrisForUniRx.Scripts.Managers.ScoreManager _scoreManager;
 
         private void Start()
         {
-            _playManager.SetActivePanel(false);
+            SetActivePanel(false);
             
             _gameStateProvider.Current
-                .Where(x => x == GameState.Play)
-                .Subscribe(_ =>
+                .Subscribe(x =>
                 {
-                    _playManager.SetActivePanel(true);
-                })
-                .AddTo(this);
-            
-            _gameStateProvider.Current
-                .Where(x => x != GameState.Play)
-                .Subscribe(_ =>
-                {
-                    _playManager.SetActivePanel(false);
+                    var isPlaying = x == GameState.Playing;
+                    SetActivePanel(isPlaying);
+                    if (isPlaying)
+                    {
+                        _scoreManager.ResetScore();    
+                    }
                 })
                 .AddTo(this);
         }

@@ -5,7 +5,7 @@ namespace TetrisForUniRx.Scripts.Blocks
 {
     public class BlockSpawner : MonoBehaviour
     {
-        [SerializeField] private TetrisShape _shape = new TetrisShape();
+        [SerializeField] private TetrisShape _shape;
         [SerializeField] private Transform _blockHolder;
         
         [Inject] DiContainer _container;
